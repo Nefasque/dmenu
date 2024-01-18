@@ -52,6 +52,7 @@ struct item {
 	char *text;
 	struct item *left, *right;
 	int out;
+	int index;
 };
 
 typedef struct {
@@ -74,6 +75,7 @@ static struct item *prev, *curr, *next, *sel;
 static int mon = -1, screen;
 static unsigned int max_lines = 0;
 static unsigned int using_vi_mode = 0;
+static int print_index = 0;
 
 static Atom clip, utf8;
 static Display *dpy;
@@ -890,7 +892,11 @@ keypress(XKeyEvent *ev)
 		break;
 	case XK_Return:
 	case XK_KP_Enter:
-		puts((sel && !(ev->state & ShiftMask)) ? sel->text : text);
+		if (print_index)
+			printf("%d\n", (sel && !(ev->state & ShiftMask)) ? sel->index : -1);
+		else
+			puts((sel && !(ev->state & ShiftMask)) ? sel->text : text);
+
 		if (!(ev->state & ControlMask)) {
 			cleanup();
 			exit(0);
@@ -1078,6 +1084,7 @@ readstdin(FILE* stream)
 			line[len - 1] = '\0';
 		items[i].text = line;
 		items[i].out = 0;
+		items[i].index = i;
 	}
 	if (items)
 		items[i].text = NULL;
@@ -1286,7 +1293,7 @@ usage(void)
 	die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
       "             [-x xoffset] [-y yoffset] [-z width] [-h height] -wb [BorderWidth]\n"
 	    "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]\n"
-      "             [-dy command]\n", stderr);
+      "             [-dy command] -ix -> print_index \n", stderr);
 }
 
 int
@@ -1315,7 +1322,9 @@ main(int argc, char *argv[])
 			using_vi_mode = start_mode;
 			global_esc.ksym = XK_Escape;
 			global_esc.state = 0;
-		} else if (i + 1 == argc)
+		} else if (!strcmp(argv[i], "-ix"))  /* adds ability to return index in list */
+			print_index = 1;
+    else if (i + 1 == argc)
 			usage();
 		/* these options take one argument */
 		else if (!strcmp(argv[i], "-l"))   /* number of lines in vertical list */
