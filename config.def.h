@@ -13,6 +13,7 @@ static const char *fonts[] = {
 };
 
 static char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
+static const char *dynamic     = NULL;      /* -dy option; dynamic command to run on input change */
 
 /* ***************
  * Color schemes 
@@ -53,19 +54,15 @@ static unsigned int min_lineheight = 8;
 static int sely = 0;
 static int commented = 0;
 static int animated = 0;
-/*
- * Characters not considered part of a word while deleting words
- * for example: " /?\"&[]"
- */
+/* Characters not considered part of a word while deleting words
+ * for example: " /?\"&[]" */
 static const char worddelimiters[] = " ";
 
 /* Size of the window border */
 static unsigned int border_width = 0;
 
-/*
- * -vi option; if nonzero, vi mode is always enabled and can be
- * accessed with the global_esc keysym + mod mask
- */
+/* vi option; if nonzero, vi mode is always enabled and can be
+ * accessed with the global_esc keysym + mod mask */
 static unsigned int vi_mode = 1;
 static unsigned int start_mode = 0;			/* mode to use when -vi is passed. 0 = insert mode, 1 = normal mode */
 static Key global_esc = { XK_n, Mod1Mask };	/* escape key when vi mode is not enabled explicitly */
@@ -74,10 +71,7 @@ static Key quit_keys[] = {
 	{ XK_q,		0 }
 };
 
-
-/*
- * Xresources preferences to load at startup
- */
+/* Xresources preferences to load at startup */
 ResourcePref resources[] = {
 	{ "font",        STRING, &font },
   { "color0",      STRING, &color0 },
