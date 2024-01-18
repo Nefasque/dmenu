@@ -6,7 +6,7 @@ static int colorprompt = 1;                /* -p  option; if 1, prompt uses Sche
 static const unsigned int alpha = 0xfa;     /* Amount of opacity. 0xff is opaque             */
 /* -fn option overrides fonts[0]; default X11 font or font set */
 
-static char font[] = "monospace:size=10";
+static char font[] = "monospace:pixelsize=18:antialias=true:autohint=true";
 static const char *fonts[] = {
   font,
   "monospace:size=10",
@@ -17,19 +17,27 @@ static char *prompt      = NULL;      /* -p  option; prompt to the left of input
 /* ***************
  * Color schemes 
  * *****************/
-static char normfgcolor[] = "#bbbbbb";
-static char normbgcolor[] = "#222222";
-static char selfgcolor[]  = "#eeeeee";
-static char selbgcolor[]  = "#005577";
-static char cursorfgcolor[] = "#222222";
-static char cursorbgcolor[] = "#ffffff";
+static char color0[] = "#222222";
+static char color1[] = "#aa3333";
+static char color2[] = "#33aa33";
+static char color3[] = "#faea33";
+static char color4[] = "#3333aa";
+static char color5[] = "#aa33aa";
+static char color6[] = "#aaaaff";
+static char color7[] = "#ffffff";
+static char color8[] = "#bbbbbb";
 
-static char *colors[SchemeLast][2] = {
-	/*     fg         bg       */
-	[SchemeNorm] = { normfgcolor, normbgcolor },
-	[SchemeSel]  = { selfgcolor,  selbgcolor  },
-	[SchemeOut]  = { "#000000",   "#00ffff" },
-  [SchemeCursor] = { cursorfgcolor, cursorbgcolor },
+static char *colors[SchemeLast][10] = {
+    [SchemeNorm] =      { color7, color0, color0},
+    [SchemeSel] =       { color0, color1, color1},
+    [SchemeOut] =       { "#000000", "#00ffff", "#00ffff" },
+    [SchemeHighlight] = { color0, color1, color8},
+    [SchemeHover] =     { color0, color1, color8 },
+    [SchemeRed] =       { color0, color7, color0 },
+    [SchemeGreen] =     { color0, color2, color0 },
+    [SchemeYellow] =    { color0, color3, color0 },
+    [SchemeBlue] =      { color0, color4, color0 },
+    [SchemePurple] =    { color0, color5, color0 },
 };
 
 static unsigned int alphas[SchemeLast][2] = {
@@ -42,7 +50,9 @@ static unsigned int lines      = 0;
 /* -h option; minimum height of a menu line */
 static unsigned int lineheight = 0;
 static unsigned int min_lineheight = 8;
-
+static int sely = 0;
+static int commented = 0;
+static int animated = 0;
 /*
  * Characters not considered part of a word while deleting words
  * for example: " /?\"&[]"
@@ -70,10 +80,15 @@ static Key quit_keys[] = {
  */
 ResourcePref resources[] = {
 	{ "font",        STRING, &font },
-	{ "color7", STRING, &normfgcolor },
-	{ "color0", STRING, &normbgcolor },
-	{ "color0",  STRING, &selfgcolor },
-	{ "color7",  STRING, &selbgcolor },
+  { "color0",      STRING, &color0 },
+  { "color1",      STRING, &color1 },
+  { "color2",      STRING, &color2 },
+  { "color3",      STRING, &color3 },
+  { "color4",      STRING, &color4 },
+  { "color5",      STRING, &color5 },
+  { "color6",      STRING, &color6 },
+  { "color7",      STRING, &color7 },
+  { "color8",      STRING, &color8 },
 	{ "prompt",      STRING, &prompt },
 };
 

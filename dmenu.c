@@ -31,7 +31,22 @@
 #define OPAQUE                0xffu
 
 /* enums */
-enum { SchemeNorm, SchemeSel, SchemeOut, SchemeCursor, SchemeLast }; /* color schemes */
+enum {
+  SchemeNorm,
+  SchemeFade,
+  SchemeHighlight,
+  SchemeHover,
+  SchemeSel,
+  SchemeOut,
+  SchemeGreen,
+  SchemeYellow,
+  SchemeBlue,
+  SchemePurple,
+  SchemeRed,
+  SchemeLast
+}; /* color schemes */
+
+
 
 struct item {
 	char *text;
@@ -166,16 +181,117 @@ cistrstr(const char *h, const char *n)
 }
 
 static int
-drawitem(struct item *item, int x, int y, int w)
-{
-	if (item == sel)
-		drw_setscheme(drw, scheme[SchemeSel]);
-	else if (item->out)
-		drw_setscheme(drw, scheme[SchemeOut]);
-	else
-		drw_setscheme(drw, scheme[SchemeNorm]);
+drawitem(struct item *item, int x, int y, int w) {
+  int iscomment = 0;
+  if (item->text[0] == '>') {
+    if (item->text[1] == '>') {
+      iscomment = 3;
+      switch (item->text[2]) {
+      case 'r':
+        drw_setscheme(drw, scheme[SchemeRed]);
+        break;
+      case 'g':
+        drw_setscheme(drw, scheme[SchemeGreen]);
+        break;
+      case 'y':
+        drw_setscheme(drw, scheme[SchemeYellow]);
+        break;
+      case 'b':
+        drw_setscheme(drw, scheme[SchemeBlue]);
+        break;
+      case 'p':
+        drw_setscheme(drw, scheme[SchemePurple]);
+        break;
+      case 'h':
+        drw_setscheme(drw, scheme[SchemeHighlight]);
+        break;
+      case 's':
+        drw_setscheme(drw, scheme[SchemeSel]);
+        break;
+      default:
+        iscomment = 1;
+        drw_setscheme(drw, scheme[SchemeNorm]);
+        break;
+      }
+    } else {
+      drw_setscheme(drw, scheme[SchemeNorm]);
+      iscomment = 1;
+    }
 
-	return drw_text(drw, x, y, w, bh, lrpad / 2, item->text, 0);
+  } else if (item->text[0] == ':') {
+    iscomment = 2;
+    if (item == sel) {
+      switch (item->text[1]) {
+      case 'r':
+        drw_setscheme(drw, scheme[SchemeRed]);
+        break;
+      case 'g':
+        drw_setscheme(drw, scheme[SchemeGreen]);
+        break;
+      case 'y':
+        drw_setscheme(drw, scheme[SchemeYellow]);
+        break;
+      case 'b':
+        drw_setscheme(drw, scheme[SchemeBlue]);
+        break;
+      case 'p':
+        drw_setscheme(drw, scheme[SchemePurple]);
+        break;
+      case 'h':
+        drw_setscheme(drw, scheme[SchemeHighlight]);
+        break;
+      case 's':
+        drw_setscheme(drw, scheme[SchemeSel]);
+        break;
+      default:
+        drw_setscheme(drw, scheme[SchemeSel]);
+        iscomment = 0;
+        break;
+      }
+    } else {
+      drw_setscheme(drw, scheme[SchemeNorm]);
+    }
+  } else {
+    if (item == sel)
+      drw_setscheme(drw, scheme[SchemeSel]);
+    else if (item->out)
+      drw_setscheme(drw, scheme[SchemeOut]);
+    else
+      drw_setscheme(drw, scheme[SchemeNorm]);
+  }
+
+  int temppadding;
+  temppadding = 0;
+  if (iscomment == 2) {
+    if (item->text[2] == ' ') {
+      temppadding = drw->fonts->h * 3;
+      animated = 1;
+      char dest[1000];
+      strcpy(dest, item->text);
+      dest[6] = '\0';
+      drw_text(drw, x, y, temppadding, lineheight, temppadding / 2.6, dest + 3, 0);
+      iscomment = 6;
+      drw_setscheme(drw, sel == item ? scheme[SchemeHover] : scheme[SchemeNorm]);
+    }
+  }
+
+  char *output;
+  if (commented) {
+    static char onestr[2];
+    onestr[0] = item->text[0];
+    onestr[1] = '\0';
+    output = onestr;
+  } else {
+    output = item->text;
+  }
+
+  if (item == sel)
+    sely = y;
+  return drw_text(
+      drw, x + ((iscomment == 6) ? temppadding : 0), y,
+      commented ? bh : (w - ((iscomment == 6) ? temppadding : 0)), bh,
+      commented ? (bh - drw_fontset_getwidth(drw, (output))) / 2 : lrpad / 2,
+      output + iscomment, 0);
 }
 
 static void
@@ -201,7 +317,7 @@ drawmenu(void)
 	curpos = TEXTW(text) - TEXTW(&text[cursor]);
 	curpos += lrpad / 2 - 1;
 	if (using_vi_mode && text[0] != '\0') {
-		drw_setscheme(drw, scheme[SchemeCursor]);
+		drw_setscheme(drw, scheme[SchemePurple]); 
 		char vi_char[] = {text[cursor], '\0'};
 		drw_text(drw, x + curpos, 0, TEXTW(vi_char) - lrpad, bh, 0, vi_char, 0);
 	} else if (using_vi_mode) {
@@ -1060,6 +1176,7 @@ setup(void)
 		x = info[i].x_org + dmx;
 		y = info[i].y_org + (topbar ? dmy : info[i].height - mh - dmy);
 		mw = (dmw>0 ? dmw : info[i].width);
+
 		XFree(info);
 	} else
 #endif
@@ -1195,6 +1312,9 @@ main(int argc, char *argv[])
 	if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
 		die("no fonts could be loaded.");
 	lrpad = drw->fonts->h;
+
+    if (lineheight == -1)
+        lineheight = drw->fonts->h * 2.5;
 
 #ifdef __OpenBSD__
 	if (pledge("stdio rpath", NULL) == -1)
