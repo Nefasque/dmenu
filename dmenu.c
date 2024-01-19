@@ -1019,7 +1019,10 @@ keypress(XKeyEvent *ev)
 		match();
 		break;
 	}
-
+	if (incremental) {
+		puts(text);
+		fflush(stdout);
+	}
 draw:
 	drawmenu();
 }
@@ -1386,11 +1389,34 @@ setup(void)
 static void
 usage(void)
 {
-	die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
-      "             [-x xoffset] [-y yoffset] [-z width] [-h height] -wb [BorderWidth]\n"
-	    "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]\n"
-	    "             -F  option; if 0, dmenu doesn't use fuzzy matching\n"
-      "             [-dy command] -ix -> print_index -t -> inprint input \n", stderr);
+	die("Help:\nsyntax : dmenu [opciones] \n"
+      "usage: dmenu [-bfiv] \n"
+      "-b     dmenu appears at the bottom of the screen.\n"
+      "-f     dmenu grabs the keyboard before reading stdin if not reading from a tty. This is faster, but will\n"
+	    "-F     option; if 0, dmenu doesn't use fuzzy matching\n"
+      "-i     dmenu matches menu items case insensitively.\n"
+	    "-r     dmenu outputs text each time a key is pressed.\n"
+      "-ix    dmenu prints the index of matched text instead of the text itself.\n"
+      "-t     Return key prints input text instead of selection.\n"
+      "-v     prints version information to stdout, then exits.\n"
+      "-vi    mode to use when -vi is passed."
+      "[-l lines]   dmenu lists items vertically, with the given number of lines. \n"
+      "[-h height]  dmenu uses a menu line of at least 'height' pixels tall, but no less than 8.\n"
+      "[-m monitor] dmenu is displayed on the monitor number supplied. Monitor numbers are starting from 0.\n"
+      "[-x xoffset] dmenu is placed at this offset measured from the left side of the monitor.  Can be negative.\n\tIf option -m is present, the measurement will use the given monitor. \n"
+      "[-y yoffset] dmenu  is  placed at this offset measured from the top of the monitor.  If the -b option is used the offset is measured from the bottom.  Can be negative.  If option -m is present, the  measure‐ment will use the given monitor.\n"
+      "[-z width]   sets the width of the dmenu window.\n"
+      "[-p prompt]  defines the prompt to be displayed to the left of the input field.\n"
+      "[-fn font]   defines the font or font set used.\n"
+      "[-nb color]  defines the normal background color.  #RGB, #RRGGBB, and X color names are supported.\n"
+      "[-nf color]  defines the normal foreground color.\n"
+      "[-sb color]  defines the selected background color.\n"
+      "[-sf color]  defines the selected foreground color.\n"
+	    "[-w windowid] embed into windowid.\n"
+      "[-n number]  preseslected item starting from 0.\n"
+      "[-dy command] runs command whenever input changes to update menu items.\n"
+      "[-wb BorderWidth] defines the width of the border around the dmenu window. \n"
+      "[-ix print_index] returns index of matched text instead of the text itself. \n", stderr);
 }
 
 int
@@ -1413,6 +1439,8 @@ main(int argc, char *argv[])
 			fast = 1;
 		else if (!strcmp(argv[i], "-F"))   /* grabs keyboard before reading stdin */
 			fuzzy = 0;
+		else if (!strcmp(argv[i], "-r"))   /* incremental */
+			incremental = 1;
 		else if (!strcmp(argv[i], "-i")) { /* case-insensitive item matching */
 			fstrncmp = strncasecmp;
 			fstrstr = cistrstr;
