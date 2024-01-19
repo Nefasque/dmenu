@@ -12,12 +12,19 @@ static const char *fonts[] = {
   "monospace:size=10",
 };
 
-static char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
-static const char *dynamic     = NULL;      /* -dy option; dynamic command to run on input change */
+/* -p  option; prompt to the left of input field */
+static char *prompt      = NULL;
+/* -dy option; dynamic command to run on input change */
+static const char *dynamic     = NULL;
+static const char *symbol_1 = "";
+static const char *symbol_2 = "";
 
 /* ***************
  * Color schemes 
- * *****************/
+ * *****************
+ * this color table is used for the default theme.
+ * the Xresources file is used to override it.
+ */
 static char color0[] = "#222222";
 static char color1[] = "#aa3333";
 static char color2[] = "#33aa33";
