@@ -76,6 +76,7 @@ static int mon = -1, screen;
 static unsigned int max_lines = 0;
 static unsigned int using_vi_mode = 0;
 static int print_index = 0;
+static int use_text_input = 0;
 
 static Atom clip, utf8;
 static Display *dpy;
@@ -683,7 +684,10 @@ vi_keypress(KeySym ksym, const XKeyEvent *ev)
 	/* misc. */
 	case XK_Return:
 	case XK_KP_Enter:
-		puts((sel && !(ev->state & ShiftMask)) ? sel->text : text);
+		if (use_text_input)
+			puts((sel && (ev->state & ShiftMask)) ? sel->text : text);
+		else
+			puts((sel && !(ev->state & ShiftMask)) ? sel->text : text);
 		if (!(ev->state & ControlMask)) {
 			cleanup();
 			exit(0);
@@ -1300,7 +1304,7 @@ usage(void)
 	die("usage: dmenu [-bfiv] [-l lines] [-p prompt] [-fn font] [-m monitor]\n"
       "             [-x xoffset] [-y yoffset] [-z width] [-h height] -wb [BorderWidth]\n"
 	    "             [-nb color] [-nf color] [-sb color] [-sf color] [-w windowid]\n"
-      "             [-dy command] -ix -> print_index \n", stderr);
+      "             [-dy command] -ix -> print_index -t -> inprint input \n", stderr);
 }
 
 int
@@ -1324,7 +1328,9 @@ main(int argc, char *argv[])
 		else if (!strcmp(argv[i], "-i")) { /* case-insensitive item matching */
 			fstrncmp = strncasecmp;
 			fstrstr = cistrstr;
-		} else if (!strcmp(argv[i], "-vi")) {
+		} else if (!strcmp(argv[i], "-t")) /* favors text input over selection */
+			use_text_input = 1;
+		 else if (!strcmp(argv[i], "-vi")) {
 			vi_mode = 1;
 			using_vi_mode = start_mode;
 			global_esc.ksym = XK_Escape;
