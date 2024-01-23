@@ -5,7 +5,7 @@ static int topbar = 1;                     /* -b  option; if 0, dmenu appears at
 static int incremental = 0;                /* -r  option; if 1, outputs text each time a key is pressed */
 static int fuzzy = 1;                      /* -F  option; if 0, dmenu doesn't use fuzzy matching     */
 static int colorprompt = 1;                /* -p  option; if 1, prompt uses SchemeSel, otherwise SchemeNorm */
-static const unsigned int alpha = 0xc0;    /* Amount of opacity. 0xff is opaque             */
+static const unsigned int alpha = 0xf0;    /* Amount of opacity. 0xff is opaque             */
 /* -fn option overrides fonts[0]; default X11 font or font set */
 static char font[] = "monospace:pixelsize=18:antialias=true:autohint=true";
 static const char *fonts[] = {
