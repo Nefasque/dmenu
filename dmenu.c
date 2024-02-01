@@ -66,7 +66,7 @@ static int bh, mw, mh;
 static int dmx = 0; /* put dmenu at this x offset */
 static int dmy = 0; /* put dmenu at this y offset (measured from the bottom if topbar is 0) */
 static unsigned int dmw = 0; /* make dmenu this wide */
-static int inputw = 0, promptw;
+static int inputw = 0, promptw, passwd = 0;
 static int lrpad; /* sum of left and right padding */
 static size_t cursor;
 static struct item *items = NULL;
@@ -304,6 +304,7 @@ drawmenu(void)
 	unsigned int curpos;
 	struct item *item;
 	int x = 0, y = 0, fh = drw->fonts->h, w;
+	char *censort;
 
 	drw_setscheme(drw, scheme[SchemeNorm]);
 	drw_rect(drw, 0, 0, mw, mh, 1, 1);
@@ -316,7 +317,12 @@ drawmenu(void)
 	/* draw input field */
 	w = (lines > 0 || !matches) ? mw - x : inputw;
 	drw_setscheme(drw, scheme[SchemeNorm]);
-	drw_text(drw, x, 0, w, bh, lrpad / 2, text, 0);
+	if (passwd) {
+	        censort = ecalloc(1, sizeof(text));
+		memset(censort, 'X', strlen(text));
+		drw_text(drw, x, 0, w, bh, lrpad / 2, censort, 0);
+		free(censort);
+	} else drw_text(drw, x, 0, w, bh, lrpad / 2, text, 0);
 
 	curpos = TEXTW(text) - TEXTW(&text[cursor]);
 	curpos += lrpad / 2 - 1;
@@ -1167,6 +1173,11 @@ readstdin(FILE* stream)
 	size_t i, junk, size = 0;
 	ssize_t len;
 
+	if(passwd){
+    inputw = lines = 0;
+    return;
+  }
+
 	/* read each line from stdin and add it to the item list */
 	for (i = 0; (len = getline(&line, &junk, stream)) != -1; i++, line = NULL) {
 	// for (i = 0; fgets(buf, sizeof buf,stream);   i++) {
@@ -1453,6 +1464,8 @@ main(int argc, char *argv[])
 			global_esc.state = 0;
 		} else if (!strcmp(argv[i], "-ix"))  /* adds ability to return index in list */
 			print_index = 1;
+		else if (!strcmp(argv[i], "-P"))   /* is the input a password */
+			passwd = 1;
     else if (i + 1 == argc)
 			usage();
 		/* these options take one argument */
