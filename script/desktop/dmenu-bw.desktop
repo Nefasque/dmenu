@@ -1,0 +1,3 @@
+[Desktop Entry]
+Name=:g  Bitwarden Dmenu
+Exec=dmenu-bw

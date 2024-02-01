@@ -1,0 +1,3 @@
+[Desktop Entry]
+Name=:r  todo list
+Exec=dmenu-todo
