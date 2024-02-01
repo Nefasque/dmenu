@@ -8,7 +8,7 @@
 
 
 #Ver canales de televisión por streaming
-CANALES="$HOME/.local/bin/dmenu/channel.conf"
+CANALES="$HOME/.config/channel.conf"
 #PLAYER="vlc -f --no-loop --play-and-exit"
 PLAYER="mpv --fs"
 LAUCHER="dmenu"
