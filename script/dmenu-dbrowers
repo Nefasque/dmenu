@@ -1,0 +1,71 @@
+#!/bin/sh
+
+NEWLINE="
+"
+
+fullpath() {
+	name="$(sh -c "echo '$1'")"
+	path="$2"
+	c="$(echo "$name" |cut -b1)"
+
+	if [ "$c" = "/" ]; then
+		full="$name"
+	else
+		full="$path/$name"
+	fi
+	realpath "$full"
+
+}
+
+main() {
+	target="$1"
+	[ -z "$target" ] && target="$(realpath .)"
+	prompt="$2"
+
+	while true; do
+		p="$prompt"
+		[ -z "$p" ] && p="$target"
+    items="$(lsd -a -1 --icon always "$target" | tail -n +2 | dmenu -p " $p" $(dmenu_arg_Default) -l 20)"
+		ec=$?
+		[ "$ec" -ne 0 ] && exit $ec
+    
+     if [[ "${items:0:1}" == "!" ]] ; then 
+       cd $p 
+       result=$(eval "${items:1}" 2>&1)
+       [ "$?" -eq 0 ] && exit 0
+       notify-send "Error: $(echo $result | awk '{print $4}')" "$(echo $result | awk '{print $5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21}')" ; exit $ec
+     fi
+
+    #remove icons 
+    items="${items:2}"
+		# ignore duplicates
+    
+    
+		items="$(echo "$items" |sort -u)"
+		nitems=$(echo "$items" |wc -l)
+		if [ $nitems -eq 1 ]; then
+			newt="$(fullpath "$items" "$target")"
+			[ ! -e "$newt" ] && continue
+			if [ -d "$newt" ]; then
+				target="$newt"
+				continue
+			fi
+		fi
+
+		IFS="$NEWLINE"
+		for item in $items; do
+			item="$(fullpath "$item" "$target")"
+			[ ! -e "$item" ] && continue
+
+      if [[ -n $(lsd -l --blocks permission $item | cut -b 4 | grep "x") ]] ; then 
+        eval $item
+        continue
+      fi 
+			echo "$item"
+		done
+		unset IFS
+		exit 0
+	done
+}
+
+main "$@"

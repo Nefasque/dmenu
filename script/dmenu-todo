@@ -1,0 +1,19 @@
+#!/bin/sh
+# Write/remove a task to do later.
+# Select an existing entry to remove it from the file, or type a new entry to
+# add it.
+
+file="$HOME/.local/bin/dmenu/todo.conf"
+! [ -f file ] && touch "$file"
+LAUCHER="dmenu $(dmenu_arg_Default)"
+cmd=$($LAUCHER -p " note" < "$file")
+while [ -n "$cmd" ]; do
+ 	if grep -q "^$cmd\$" "$file"; then
+		grep -v "^$cmd\$" "$file" > "$file.$$"
+		mv "$file.$$" "$file"
+ 	else
+		echo "$cmd" >> "$file"
+ 	fi
+  cmd=$($LAUCHER -p " note " < "$file")
+done
+exit 0

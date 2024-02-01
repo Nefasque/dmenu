@@ -1,0 +1,63 @@
+#!/bin/bash
+
+copy_values(){
+  local item="$1"
+  local value="$2"
+  local result=$(echo "$item" | jq "$value")
+
+  # if result is null or empty
+  if [ "$result" = "null" ] || [ "$result" = "" ]; then
+    return
+  fi 
+
+  echo "$result" | xclip -selection clipboard
+}
+
+menu_opciones(){
+  opciones="copy username\ncopy password\ncopy url\ncopy notes"
+  echo -e "$opciones" | $LAUCHER  -p "choose option"
+}
+
+
+##### 
+## MAIn 
+#####
+export PATCH_BW_SESSION="/tmp/bw_session"
+BW_SESSION=$(cat "$PATCH_BW_SESSION" 2>/dev/null)
+LAUCHER="dmenu $(dmenu_arg_Default)"
+
+# login
+if [ "$BW_SESSION" = "" ]; then
+  password_manager=$($LAUCHER -P -p "Password Manager: ")
+  if [ "$password_manager" = "" ]; then
+    exit 1
+  fi
+
+  BW_SESSION=$(bw unlock "$password_manager" | grep -oP -m 1 '(?<=BW_SESSION=")[^"]+') || {
+    notify-send "Error: Failed to unlock"
+    exit 1
+  }
+
+  echo "$BW_SESSION" > "$PATCH_BW_SESSION"
+fi
+
+list_items=$(bw list items --session "$BW_SESSION")
+opc=$(menu_opciones)
+name="$(echo "$list_items" | jq -r ".[].name" | $LAUCHER -p "choose login" )"
+item=$(echo "$list_items" | jq ".[] | select(.name == \"$name\")")
+
+case $opc in
+  "copy username") copy_values "$item" ".login.username";;
+  "copy password") copy_values "$item" ".login.password";;
+  "copy url") copy_values "$item" ".login.uris[].uri";;
+  "copy notes") copy_values "$item" ".notes";;
+  *) notify-send "Error: Invalid option";;
+esac
+
+pid="$(ps aux | grep "dmenu-bw-remove-tmp" | grep -v grep | awk '{print $2}' )"
+if [[ -z $pid ]] ; then
+  dmenu-bw-remove-tmp &
+else 
+  pkill -P $pid
+  dmenu-bw-remove-tmp &
+fi

@@ -1,0 +1,103 @@
+#!/bin/bash
+
+# a simple script to get radio streams
+# with dynamic menu(dmenu) for selected channel
+
+# this program is a derivative of 
+# https://github.com/mhyst/radio
+
+
+#Ver canales de televisión por streaming
+CANALES="$HOME/.local/bin/dmenu/channel.conf"
+#PLAYER="vlc -f --no-loop --play-and-exit"
+PLAYER="mpv --fs"
+LAUCHER="dmenu"
+LAUCHER_ARGS="-p channel -ix $(dmenu_arg_Default )"
+
+# obtener url
+# note arg: "My Channel|http://url"
+# return "http://url"
+function getURL() {
+    local canal="$1"
+    local url="${canal##*|}"
+    url=$(tr -d '\n' <<< "$url")
+    echo "$url"
+}
+
+# obtener nombre 
+# note arg: "My Channel|http://url"
+# return "My Channel"
+function getNombre() {
+    local nombre="${1%|*} "
+    echo "$nombre"
+}
+
+
+# check for config file
+function checkConfig() {
+  if ! [ -f $(dirname "$CANALES") ]; then
+    mkdir -p "$(dirname "$CANALES")" 2>&1
+  fi
+
+  if ! [ -f "$CANALES" ]; then
+    touch "$CANALES"
+    # modificar de la url de github
+    # wget -O "$CANALES" https://raw.githubusercontent.com/mhyst/spaintv/master/tv.conf 2>&1
+  fi
+}
+
+# kill player
+function killplayer() {
+  if [ -f /tmp/tvpid ]; then
+    tvpid=$(< /tmp/tvpid)
+    #echo "tvpid: $tvpid"
+    if [[ $tvpid != "" ]]; then 
+      pcmd=$(ps -p "$tvpid" -o comm=)
+      #Debug
+      #echo "Comando: >$pcmd<"
+      if [[ "$pcmd" == "vlc" ]] || [[ "$pcmd" == "mpv" ]]; then
+          notify-send "Matando..." "$pcmd"
+          kill -9 "$tvpid"
+      fi
+    fi
+  fi
+}
+
+checkConfig
+
+
+if [[ ${#CANALES[@]} == 0 ]]; then
+  notify-send "No hay canales!" "Por alguna razón no tiene canales en 
+     su fichero de configuración o no tiene archivo de configuración.
+     Aseguresé de tener conexión a internet la próxima vez que ejecute
+     el script."
+  exit
+fi
+
+
+# get name of the channels for show in dmenu
+readarray canales < "$CANALES"
+namesChannels=()
+for (( i = 0; i < "${#canales[@]}"; i++)); do
+  if [[ i -eq 0 ]] ; then 
+    namesChannels[i]="$(getNombre "${canales[i]}")"
+  else 
+    namesChannels[i]="\n$(getNombre "${canales[i]}")"
+  fi
+done
+
+chosen=$(echo -e "${namesChannels[@]}" | $LAUCHER $LAUCHER_ARGS)
+[[ $? != 0 ]] && exit
+
+canal=${canales[$chosen]}
+
+nombre=$(getNombre "$canal")
+echo "$nombre"
+url=$(getURL "$canal")
+notify-send "$nombre" "$url"
+
+# kill player previous
+killplayer
+
+st -e $PLAYER $url
+echo "$!" > /tmp/tvpid

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# this script removes the tmp file if it exists
+
+if [ -f /tmp/bw_session ] ; then 
+  sleep 900
+  pid="$(ps aux | grep "dmenu-bw" | grep -v "grep" | grep -v "remove" | awk '{print $2}' )"
+  if [[ $pid == "" ]]; then
+    rm -v "/tmp/bw_session"
+  else 
+    dmenu-bw-remove-tmp
+  fi
+fi

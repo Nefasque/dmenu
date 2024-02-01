@@ -1,0 +1,11 @@
+#!/bin/bash
+options=":p󰗽 logout \n:g suspend \n:b restart \n:r shutdown"
+result=$(echo -e $options | dmenu -p "Power menu" $(dmenu_arg_Default) -ix )
+
+case "$result" in
+  0) pkill dwm;;
+  1) loginctl suspend;;
+  2) loginctl reboot;;
+  3) loginctl poweroff;;
+  *) echo "No se ha seleccionado ninguna opcion"
+esac

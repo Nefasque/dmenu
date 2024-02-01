@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# esto es una prueba
+# function fmt1 () {
+#   local ancho=$(echo "$1" | awk '{print int($1/1.7)}')
+#   local alto=$(echo "$2" | awk '{print int($1/3)}')
+#   local largo=$(echo "$1" | awk '{print int($1/3)}')
+#   echo "-x $ancho -y $alto -z $largo -l 10 -bw 4 -vi -i"
+# }
+
+function fmt () {
+  local largo=$(echo "$1" | awk '{print int($1/2)}')
+  local ancho=$(echo $(("$1" - $largo)) | awk '{print int($1/2)}')
+  local alto=$(echo "$2" | awk '{print int($1*0.04)}')
+  echo "-x $ancho -y $alto -z $largo -l 15 -bw 4 -vi -i -h 35"
+}
+
+ancho=$(xdpyinfo | awk '/dimensions:/ {print $2}' | cut -d 'x' -f1)
+alto=$(xdpyinfo | awk '/dimensions:/ {print $2}' | cut -d 'x' -f2)
+
+fmt $ancho $alto 
