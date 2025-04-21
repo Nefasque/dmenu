@@ -41,12 +41,13 @@ load_config() {
 		: "${CLIP_COPY:=xclip -i -r -selection clipboard}"
 		: "${CLIP_PASTE_CLIP:=xclip -o -selection clipboard}"
 		: "${CLIP_PASTE_PRIM:=xclip -o -selection primary}"
-		: "${DMENU:=dmenu}"
+    : "${DMENU:=dmenu $(dmenu_arg_Default)}"
 		: "${TERMINAL=xterm}"
 	fi
+$(dmenu_arg_Default)
 
 	# Default values
-	: "${TRANS_LANGS:=:ru :en}"
+	: "${TRANS_LANGS:=:es :ru :en}"
 	: "${DMENU_TEXT:=${DMENU} -i -p 'Translate: Text'}"
 	: "${DMENU_LANG:=${DMENU} -i -p 'Translate: Into'}"
 	: "${DMENU_NEXT:=${DMENU} -i -p 'Translate: Next?'}"

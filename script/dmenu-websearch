@@ -9,15 +9,9 @@
 # A  browser-independent address  bar  with bookmark  support. When  the
 # cursor is on a web browser it acts as the address bar of that browser.
 
-browser='firefox --new-window'
+browser='brave'
 engine='https://search.brave.com/search?q=%s'
-# bookmarks="$HOME/.local/bin/dmenu/bookmarks.conf"
-if [ -e "$HOME/bookmarks.html" ]; then bookmarks="$HOME/bookmarks.html"
-elif [ -e "$HOME/.bookmarks.html" ]; then bookmarks="$HOME/.bookmarks.html"
-elif [ -e "$HOME/.config/bookmarks.html" ]; then bookmarks="$HOME/.config/bookmarks.html"
-elif [ -e "$HOME/.local/bin/dmenu/bookmarks.html" ]; then bookmarks="$HOME/.local/bin/dmenu/bookmarks.html"
-elif [ -e "$HOME/.local/share/bookmarks.html" ]; then bookmarks="$HOME/.local/share/bookmarks.html"
-fi
+bookmarks="$HOME/.bookmarks.html"
 
 gotourl() {
 	if [ "$nbrowser" = surf ]
@@ -46,12 +40,12 @@ searchweb() {
 	gotourl
 }
 
-xprop -root | grep '^_NET_ACTIVE_WINDOW' >/dev/null && {
+xprop -root | grep '^_NET_ACTIVE_WINDOW' && {
 	winid=$(xprop -root _NET_ACTIVE_WINDOW | sed 's/.*[[:space:]]//')
 	class=$(xprop -id "$winid" WM_CLASS | awk -F'\"' '{ print $(NF - 1) }')
 	case "$class" in
 		Firefox) nbrowser='firefox' ;;
-		# Firefox) shor)tcut='ctrl+l' ;; # alternative method, uses xdotool
+		#Firefox) shortcut='ctrl+l' ;; # alternative method, uses xdotool
 		IceCat) nbrowser='icecat' ;;
 		Chromium) nbrowser='chromium' ;;
 		Chrome) nbrowser='chrome' ;;
@@ -74,7 +68,7 @@ xprop -root | grep '^_NET_ACTIVE_WINDOW' >/dev/null && {
 			do
 				pid=$(pgrep -oP "$pid")
 			done
-			pname=$(awk '/^Name\\:/{ print $NF }' /proc/"$pid"/status) ||
+			pname=$(awk '/^Name\:/{ print $NF }' /proc/"$pid"/status) ||
 				winid="" ;;
 	esac
 	[ -n "$pname" ] && case "$pname" in
@@ -89,7 +83,7 @@ trap 'rm "$tmpfile"' 0 1 15
 printf '%s\n%s\n' "$uricur" "$1" > "$tmpfile"
 cat "$bookmarks" | grep -oP '(?<=HREF=")[^"]+' >> "$tmpfile"
 sed -i -E '/^(#|$)/d' "$tmpfile"
-choice=$(dmenu -i -p "󰥖 search " -w "$winid" $(dmenu_arg_Default) < "$tmpfile") || exit 1
+choice=$(dmenu -i -p "Go:" -w "$winid" $(dmenu_arg_Default) < "$tmpfile") || exit 1
 
 # Detect links without protocol (This is WIP)
 protocol='^(https?|ftps?|mailto|about|file):///?'

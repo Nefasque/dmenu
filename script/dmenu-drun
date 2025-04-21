@@ -1,4 +1,3 @@
 #!/bin/bash
 # Obtener el ancho y alto de la pantalla
 j4-dmenu-desktop -d -F --dmenu="dmenu -p '󱓞 ' $(dmenu_arg_Default)"
-
